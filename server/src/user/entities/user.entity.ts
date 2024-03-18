@@ -2,6 +2,8 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import {OneToMany} from 'typeorm/decorator/relations/OneToMany';
 import {Order} from '../../orders/entities/order.entity';
 import {Tag} from '../../tags/entities/tag.entity';
+import {Roles} from './roles';
+import { Customer } from "src/customer/entities/customer.entity";
 
 @Entity()
 export class User {
@@ -14,14 +16,17 @@ export class User {
     @Column()
     lastName: string;
 
-    @Column()
+    @Column({unique: true})
     email: string;
 
     @Column()
     password: string;
 
-    @Column()
+    @Column({unique: true})
     username: string;
+
+    @Column({type: 'enum', enum: Roles, default: Roles.USER})
+    role: Roles;
 
     @OneToMany(() => Order, (order) => order.user, {
         onDelete: 'CASCADE'
@@ -32,6 +37,9 @@ export class User {
         onDelete: 'CASCADE'
     })
     tags: Tag[];
+
+    @OneToMany(() => Customer, (customer) => customer.user)
+    customers: Customer[];
 
     @CreateDateColumn()
     createdAt: Date;

@@ -1,6 +1,7 @@
 import {Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn } from "typeorm";
 import {Tag} from '../../tags/entities/tag.entity';
 import {User} from '../../user/entities/user.entity';
+import {Customer} from '../../customer/entities/customer.entity';
 
 @Entity()
 export class Order {
@@ -15,9 +16,6 @@ export class Order {
 
     @Column()
     price: number;
-
-    @Column()
-    customer: string; // can be string or []
 
     @Column()
     isComplete: boolean;
@@ -35,6 +33,12 @@ export class Order {
     })
     @JoinColumn({name: 'user_id'})
     user: User;
+
+    @ManyToOne(() => Customer, (customer) => customer.orders, {
+        onDelete: 'SET NULL'
+    })
+    @JoinColumn({name: 'customer_id'})
+    customer: Customer;
 
     @CreateDateColumn()
     createdAt: Date;
