@@ -1,4 +1,4 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import {Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import {User} from '../../user/entities/user.entity';
 import {Order} from '../../orders/entities/order.entity';
 
@@ -20,4 +20,10 @@ export class Customer {
         onDelete: 'CASCADE'
     })
     orders: Order[];
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 }
