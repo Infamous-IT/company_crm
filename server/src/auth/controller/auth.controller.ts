@@ -4,6 +4,9 @@ import {LocalAuthGuard} from '../guards/local-auth.guard';
 import {JwtAuthGuard} from '../guards/JwtAuthGuard';
 import {GoogleOAuthGuard} from '../guards/google-oauth.guard';
 import {CreateUserDto} from '../../user/dto/create-user.dto';
+import { Response } from 'express';
+import {HttpStatus} from '@nestjs/common/enums/http-status.enum';
+import {Req, Res} from '@nestjs/common/decorators/http/route-params.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -12,6 +15,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() req) {
+    console.log(req);
     return await this.authService.login(req.user);
   }
 
@@ -28,18 +32,22 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
-  async googleAuth(@Request() req) {
+  async auth() {
 
   }
 
-  @Get('google-redirect')
+  @Get('google/callback')
   @UseGuards(GoogleOAuthGuard)
-  @Redirect()
-  async googleAuthRedirect(@Request() req) {
+  async googleAuthCallback(@Req() req, @Res() res: Response) {
     try {
-      const result = await this.authService.googleLogin(req.user);
+      const result = await this.authService.googleLogin(req);
+      res.cookie(`access_token`, result, {
+        maxAge: 2592000000,
+        sameSite: true,
+        secure: false,
+      });
       console.log(result)
-      return result;
+      return res.status(HttpStatus.OK);
     } catch (e) {
       return {
         message: 'Google login failed',

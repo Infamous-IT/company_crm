@@ -39,6 +39,13 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
+  @Patch(':type/:id/settings')
+  @UseGuards(JwtAuthGuard, CreatorGuard)
+  createSSOPassword(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.createSSOPassword(id, updateUserDto);
+  }
+
+
   @Patch(':type/:id')
   @UseGuards(JwtAuthGuard, CreatorGuard)
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {

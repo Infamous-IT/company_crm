@@ -1,4 +1,4 @@
-import { IsEmail, MinLength } from 'class-validator';
+import { IsEmail, MinLength} from 'class-validator';
 
 export class CreateUserDto {
     @MinLength(2, { message: 'First name must be more than 2 characters!'})

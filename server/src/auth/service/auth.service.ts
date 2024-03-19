@@ -2,7 +2,7 @@ import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {UserService} from '../../user/service/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import {IUser} from '../../types/types';
+import {IGoogleUser, IUser} from '../../types/types';
 import {CreateUserDto} from '../../user/dto/create-user.dto';
 import {User} from '../../user/entities/user.entity';
 
@@ -40,21 +40,21 @@ export class AuthService {
   }
 
   async googleLogin(req) {
-    if (!req.user) {
+    const {email, accessToken, firstName, lastName } = req.user;
+    console.log(req)
+    if (!accessToken) {
       return 'No user from google';
     }
 
-    const {email, name} = req.user;
+    const existingUser = await this.userService.findOneByEmail(email);
 
-    let user = await this.userService.findOneByEmail(email);
-    const password = this.generateRandomPassword();
 
-    if (!user) {
+    if (!existingUser) {
       const createUserDto: CreateUserDto = {
         email: email,
-        firstName: name.givenName,
-        lastName: name.familyName,
-        password: password
+        firstName: firstName,
+        lastName: lastName ?? '',
+        password: '11111111'
       }
 
       return await this.userService.create(createUserDto);
@@ -62,27 +62,11 @@ export class AuthService {
 
     return {
       message: 'User information from google',
-      user: user,
+      user: req.user,
       token: this.jwtService.sign({
-        id: user.id,
-        email: user.email
+        id: new Date().getTime(),
+        email: email
       })
     }
-  }
-
-  generateRandomPassword(): string {
-    const length = 10;
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let password = '';
-
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      password += characters.charAt(randomIndex);
-    }
-
-    const salt = 10;
-    const hashedPassword = bcrypt.hashSync(password, salt);
-
-    return hashedPassword;
   }
 }

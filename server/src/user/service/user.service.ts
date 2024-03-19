@@ -1,13 +1,11 @@
 import {BadRequestException, Injectable, NotFoundException, UnauthorizedException} from '@nestjs/common';
-import { CreateUserDto } from '../dto/create-user.dto';
+import {CreateUserDto} from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import {User} from '../entities/user.entity';
 import { Repository } from 'typeorm';
 import {JwtService} from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { isUUID } from 'class-validator';
-import {UUID} from 'typeorm/driver/mongodb/bson.typings';
 
 @Injectable()
 export class UserService {
@@ -22,6 +20,7 @@ export class UserService {
     });
 
     if (existingUser) throw new BadRequestException('This email already exists');
+
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
     const user = await this.userRepository.save({
@@ -34,6 +33,16 @@ export class UserService {
     const token = this.jwtService.sign({email: createUserDto.email});
 
     return {user, token};
+  }
+
+  async createSSOPassword(id: string, updateUserDto: UpdateUserDto) {
+    const existingUser = await this.userRepository.findOne({where: {id}});
+
+    if (!existingUser) throw new NotFoundException(`User with id ${id} was not found`);
+
+    const hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
+
+    return await this.userRepository.update(id, {...updateUserDto, password: hashedPassword});
   }
 
   async findAll(page: number, limit: number, isAdmin: boolean) {
