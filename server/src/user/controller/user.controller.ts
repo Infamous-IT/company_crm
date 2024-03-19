@@ -1,7 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UsePipes,
+  ValidationPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from '../service/user.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import {JwtAuthGuard} from '../../auth/guards/JwtAuthGuard';
+import {CreatorGuard} from '../../guard/creator.guard';
 
 @Controller('user')
 export class UserController {
@@ -14,21 +28,25 @@ export class UserController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   findAll(@Query('page') page: number, @Query('limit') limit: number, @Query('isAdmin') isAdmin: boolean) {
     return this.userService.findAll(page, limit, isAdmin);
   }
 
-  @Get(':id')
+  @Get(':type/:id')
+  @UseGuards(JwtAuthGuard, CreatorGuard)
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch(':type/:id')
+  @UseGuards(JwtAuthGuard, CreatorGuard)
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(id, updateUserDto);
   }
 
-  @Delete(':id')
+  @Delete(':type/:id')
+  @UseGuards(JwtAuthGuard, CreatorGuard)
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }

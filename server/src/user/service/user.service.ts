@@ -6,6 +6,8 @@ import {User} from '../entities/user.entity';
 import { Repository } from 'typeorm';
 import {JwtService} from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { isUUID } from 'class-validator';
+import {UUID} from 'typeorm/driver/mongodb/bson.typings';
 
 @Injectable()
 export class UserService {
@@ -19,14 +21,14 @@ export class UserService {
       },
     });
 
-    if (!existingUser) throw new BadRequestException('This email already exists');
+    if (existingUser) throw new BadRequestException('This email already exists');
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
     const user = await this.userRepository.save({
       email: createUserDto.email,
       firstName: createUserDto.firstName,
       lastName: createUserDto.lastName,
-      username: createUserDto.username,
-      password: await bcrypt.hash(createUserDto.password),
+      password: hashedPassword,
     });
 
     const token = this.jwtService.sign({email: createUserDto.email});
@@ -52,6 +54,16 @@ export class UserService {
     });
 
     return users;
+  }
+
+  async findOneById(id: string) {
+    const user = await this.userRepository.findOne({where: {id},
+      relations: {
+        orders: true,
+        tags: true,
+        customers: true
+      }});
+    return user;
   }
 
   async findOne(email: string): Promise<User | undefined> {
@@ -90,5 +102,9 @@ export class UserService {
 
     if (!user) throw new NotFoundException(`User with id ${id} was not found`);
     return await this.userRepository.delete(id);
+  }
+
+  async findOneByEmail(email: string): Promise<User | undefined> {
+    return this.userRepository.findOne({ where: { email } });
   }
 }
