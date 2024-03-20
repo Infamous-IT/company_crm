@@ -48,7 +48,6 @@ export class AuthService {
 
     const existingUser = await this.userService.findOneByEmail(email);
 
-
     if (!existingUser) {
       const createUserDto: CreateUserDto = {
         email: email,
@@ -67,6 +66,50 @@ export class AuthService {
         id: new Date().getTime(),
         email: email
       })
+    }
+  }
+
+  async facebookSSOLogin(req) {
+    const { user } = req.user;
+    const { uniqueId, email, accessToken, firstName, lastName } = user;
+
+    if (!accessToken) {
+      return 'No user from facebook';
+    }
+
+    // console.log(req);
+
+    const existingUser = await this.userService.findOneByUniqueId(uniqueId);
+
+    if (!existingUser) {
+      const createUserDto: CreateUserDto = {
+        email: email,
+        firstName: firstName,
+        lastName: lastName ?? '',
+        password: '11111111',
+        uniqueId: uniqueId
+      }
+      // console.log(req.user.user.uniqueId);
+      const newUser = await this.userService.create(createUserDto);
+
+      // console.log(newUser);
+      return {
+        message: 'New user was created from Facebook!',
+        user: newUser,
+        token: this.jwtService.sign({
+          id: new Date().getTime(),
+          email: email
+        })
+      };
+    } else {
+      return {
+        message: 'User information from Facebook',
+        user: req.user,
+        token: this.jwtService.sign({
+          id: new Date().getTime(),
+          email: email
+        })
+      }
     }
   }
 }

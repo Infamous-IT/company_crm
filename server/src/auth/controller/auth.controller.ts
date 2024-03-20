@@ -7,6 +7,7 @@ import {CreateUserDto} from '../../user/dto/create-user.dto';
 import { Response } from 'express';
 import {HttpStatus} from '@nestjs/common/enums/http-status.enum';
 import {Req, Res} from '@nestjs/common/decorators/http/route-params.decorator';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -51,6 +52,35 @@ export class AuthController {
     } catch (e) {
       return {
         message: 'Google login failed',
+        error: e.message
+      }
+    }
+  }
+
+  @Get('facebook')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookLogin() {
+
+  }
+
+  // when i use domain & host, i need to replace data in Facebook For Developers (website link and domain name)
+  @Get('facebook/callback')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookAuthCallback(@Req() req, @Res() res: Response) {
+
+    try {
+      const result = await this.authService.facebookSSOLogin(req);
+
+      res.cookie(`access_token`, result, {
+        maxAge: 2592000000,
+        sameSite: true,
+        secure: false,
+      });
+
+      return res.status(HttpStatus.OK);
+    } catch (e) {
+      return {
+        message: 'Facebook login failed',
         error: e.message
       }
     }

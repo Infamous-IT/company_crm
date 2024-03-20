@@ -1,5 +1,5 @@
 import {BadRequestException, Injectable, NotFoundException, UnauthorizedException} from '@nestjs/common';
-import {CreateUserDto} from '../dto/create-user.dto';
+import { CreateUserDto, FacebookUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import {User} from '../entities/user.entity';
@@ -22,13 +22,16 @@ export class UserService {
     if (existingUser) throw new BadRequestException('This email already exists');
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-
     const user = await this.userRepository.save({
       email: createUserDto.email,
       firstName: createUserDto.firstName,
       lastName: createUserDto.lastName,
       password: hashedPassword,
+      // uniqueId: createUserDto.uniqueId
+      ...(createUserDto.uniqueId && {uniqueId: createUserDto.uniqueId}),
     });
+    // console.log(user);
+    // console.log(JSON.stringify(createUserDto) + 'dtp');
 
     const token = this.jwtService.sign({email: createUserDto.email});
 
@@ -115,5 +118,9 @@ export class UserService {
 
   async findOneByEmail(email: string): Promise<User | undefined> {
     return this.userRepository.findOne({ where: { email } });
+  }
+
+  async findOneByUniqueId(uniqueId: string): Promise<User | undefined> {
+    return this.userRepository.findOne({ where: { uniqueId } });
   }
 }
