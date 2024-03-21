@@ -1,34 +1,42 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { TagsService } from '../service/tags.service';
 import { CreateTagDto } from '../dto/create-tag.dto';
 import { UpdateTagDto } from '../dto/update-tag.dto';
+import { JwtAuthGuard } from '../../auth/guards/JwtAuthGuard';
+import { CreatorGuard } from '../../guard/creator.guard';
 
 @Controller('tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
   @Post()
-  create(@Body() createTagDto: CreateTagDto) {
-    return this.tagsService.create(createTagDto);
+  @UseGuards(JwtAuthGuard)
+  @UsePipes(new ValidationPipe())
+  create(@Body() createTagDto: CreateTagDto, @Req() req) {
+    return this.tagsService.create(createTagDto, req.user.id);
   }
 
   @Get()
-  findAll() {
-    return this.tagsService.findAll();
+  @UseGuards(JwtAuthGuard)
+  findAll(@Req() req) {
+    return this.tagsService.findAll(req.user.id);
   }
 
-  @Get(':id')
+  @Get(':type/:id')
+  @UseGuards(JwtAuthGuard, CreatorGuard)
   findOne(@Param('id') id: string) {
-    return this.tagsService.findOne(+id);
+    return this.tagsService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch(':type/:id')
+  @UseGuards(JwtAuthGuard, CreatorGuard)
   update(@Param('id') id: string, @Body() updateTagDto: UpdateTagDto) {
-    return this.tagsService.update(+id, updateTagDto);
+    return this.tagsService.update(id, updateTagDto);
   }
 
-  @Delete(':id')
+  @Delete(':type/:id')
+  @UseGuards(JwtAuthGuard, CreatorGuard)
   remove(@Param('id') id: string) {
-    return this.tagsService.remove(+id);
+    return this.tagsService.remove(id);
   }
 }

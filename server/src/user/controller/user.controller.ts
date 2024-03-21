@@ -17,7 +17,7 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import {JwtAuthGuard} from '../../auth/guards/JwtAuthGuard';
 import {CreatorGuard} from '../../guard/creator.guard';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -36,7 +36,7 @@ export class UserController {
   @Get(':type/:id')
   @UseGuards(JwtAuthGuard, CreatorGuard)
   findOne(@Param('id') id: string) {
-    return this.userService.findOne(id);
+    return this.userService.findOneById(id);
   }
 
   @Patch(':type/:id/settings')

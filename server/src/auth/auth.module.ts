@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { AuthService } from './service/auth.service';
 import { AuthController } from './controller/auth.controller';
 import { UserModule } from '../user/user.module';
@@ -27,6 +27,7 @@ import { FacebookStrategy } from './strategies/facebook.strategy';
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy, GoogleStrategy, FacebookStrategy],
-  exports: [AuthService]
+  exports: [AuthService, JwtModule]
 })
+@Global()
 export class AuthModule {}

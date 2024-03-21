@@ -1,10 +1,14 @@
 import {BadRequestException, CanActivate, ExecutionContext, Injectable, NotFoundException} from '@nestjs/common';
 import {UserService} from '../user/service/user.service';
+import { TagsService } from '../tags/service/tags.service';
 
 
 @Injectable()
 export class CreatorGuard implements CanActivate {
-    constructor(private readonly userService: UserService) {
+    constructor(
+      private readonly userService: UserService,
+      private readonly tagService: TagsService,
+      ) {
     }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -17,13 +21,16 @@ export class CreatorGuard implements CanActivate {
             case 'user':
                 entity = await this.userService.findOneById(id);
                 break;
+            case 'tag':
+                entity = await this.tagService.findOne(id);
+                break;
             default:
                 throw new NotFoundException('Something went wrong...')
         }
 
         const userIdFromRequest = request.user?.id;
 
-        if (entity && entity.id === userIdFromRequest) {
+        if (entity?.user?.id || entity && entity.id === userIdFromRequest) {
             return true;
         }
 

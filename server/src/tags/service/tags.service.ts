@@ -1,26 +1,87 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTagDto } from '../dto/create-tag.dto';
 import { UpdateTagDto } from '../dto/update-tag.dto';
+import { Tag } from '../entities/tag.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TagsService {
-  create(createTagDto: CreateTagDto) {
-    return 'This action adds a new tag';
+
+  constructor(
+    @InjectRepository(Tag)
+    private readonly tagRepository: Repository<Tag>) {}
+
+  async create(createTagDto: CreateTagDto, id: string) {
+    const isExisting = await this.tagRepository.findBy({
+      user: {id},
+      title: createTagDto.title,
+    });
+
+    if (isExisting.length) {
+      throw new BadRequestException('This tag already exists!');
+    }
+
+    const newTag = {
+      title: createTagDto.title,
+      user: {id}
+    }
+
+    return await this.tagRepository.save(newTag);
   }
 
-  findAll() {
-    return `This action returns all tags`;
+  async findAll(id: string) {
+    return await this.tagRepository.find({
+      where: {
+        user: {id},
+      },
+      relations: {
+        user: true,
+        order: true,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} tag`;
+  async findOne(id: string) {
+    const tag = await this.tagRepository.findOne({
+      where: {id},
+      relations: {
+        user: true,
+        order: true
+      },
+    });
+
+    if (!tag) {
+      throw new NotFoundException('Tag with id ' + id + ' was not found!');
+    }
+
+    return tag;
   }
 
-  update(id: number, updateTagDto: UpdateTagDto) {
-    return `This action updates a #${id} tag`;
+  async update(id: string, updateTagDto: UpdateTagDto) {
+    const tag = await this.tagRepository.findOne({
+      where: {id},
+      relations: {
+        user: true,
+        order: true
+      },
+    });
+
+    if (!tag) {
+      throw new NotFoundException('Tag with id ' + id + ' was not found!');
+    }
+
+    return await this.tagRepository.update(id, updateTagDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} tag`;
+  async remove(id: string) {
+    const tag = await this.tagRepository.findOne({
+      where: {id},
+    });
+
+    if (!tag) {
+      throw new NotFoundException('Tag with id ' + id + ' was not found!');
+    }
+    return await this.tagRepository.delete(id);
   }
 }

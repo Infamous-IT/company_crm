@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AuthService } from '../service/auth.service';
 import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy } from "passport-facebook";
-import { isValidEmail }  from '../../regEx/valid.email';
+import { isValidEmail }  from '../../utils/regEx/valid.email';
 import { generateRandomEmail } from '../../utils/generateRandomEmail';
 
 
