@@ -47,7 +47,7 @@ export class AuthController {
         sameSite: true,
         secure: false,
       });
-      console.log(result)
+      // console.log(result)
       return res.status(HttpStatus.OK);
     } catch (e) {
       return {
