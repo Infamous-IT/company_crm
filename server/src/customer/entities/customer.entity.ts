@@ -1,6 +1,6 @@
-import {Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import {User} from '../../user/entities/user.entity';
-import {Order} from '../../orders/entities/order.entity';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { User } from '../../user/entities/user.entity';
+import { Order } from '../../orders/entities/order.entity';
 
 @Entity()
 export class Customer {
