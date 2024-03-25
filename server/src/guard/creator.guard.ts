@@ -30,7 +30,7 @@ export class CreatorGuard implements CanActivate {
       case 'tag':
         entity = await this.tagService.findOne(id);
         break;
-      case 'customer':
+      case 'customers':
         entity = await this.customerService.findOne(id);
         break;
       default:
