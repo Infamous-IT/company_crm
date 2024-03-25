@@ -7,14 +7,14 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class TagsService {
-
   constructor(
     @InjectRepository(Tag)
-    private readonly tagRepository: Repository<Tag>) {}
+    private readonly tagRepository: Repository<Tag>
+  ) {}
 
   async create(createTagDto: CreateTagDto, id: string) {
     const isExisting = await this.tagRepository.findBy({
-      user: {id},
+      user: { id },
       title: createTagDto.title,
     });
 
@@ -24,8 +24,8 @@ export class TagsService {
 
     const newTag = {
       title: createTagDto.title,
-      user: {id}
-    }
+      user: { id },
+    };
 
     return await this.tagRepository.save(newTag);
   }
@@ -33,7 +33,7 @@ export class TagsService {
   async findAll(id: string) {
     return await this.tagRepository.find({
       where: {
-        user: {id},
+        user: { id },
       },
       relations: {
         user: true,
@@ -44,10 +44,10 @@ export class TagsService {
 
   async findOne(id: string) {
     const tag = await this.tagRepository.findOne({
-      where: {id},
+      where: { id },
       relations: {
         user: true,
-        order: true
+        order: true,
       },
     });
 
@@ -60,10 +60,10 @@ export class TagsService {
 
   async update(id: string, updateTagDto: UpdateTagDto) {
     const tag = await this.tagRepository.findOne({
-      where: {id},
+      where: { id },
       relations: {
         user: true,
-        order: true
+        order: true,
       },
     });
 
@@ -76,7 +76,7 @@ export class TagsService {
 
   async remove(id: string) {
     const tag = await this.tagRepository.findOne({
-      where: {id},
+      where: { id },
     });
 
     if (!tag) {
