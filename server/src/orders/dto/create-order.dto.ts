@@ -17,10 +17,10 @@ export class CreateOrderDto {
     @IsCurrency({allow_decimal: true})
     price: number;
 
-    @IsNotEmpty()
+    @IsOptional()
     @MinLength(5)
     @MaxLength(35)
-    customer: string;
+    customer?: string;
 
     @IsNotEmpty()
     isComplete: boolean;
@@ -28,8 +28,8 @@ export class CreateOrderDto {
     @IsOptional()
     estimatedTime?: Date;
 
-    @IsNotEmpty()
-    tags: Tag;
+    @IsOptional()
+    tags?: Tag[];
 
     @IsOptional()
     user?: User;
