@@ -15,6 +15,16 @@ export class OrdersController {
     return this.ordersService.create(createOrderDto, user, customer, tags);
   }
 
+  @Get('get_by_title')
+  getByTitle(@Query('title') title: string) {
+    return this.ordersService.getByTitle(title);
+  }
+
+  @Get('total_price')
+  getTotalPrice(){
+    return this.ordersService.getTotalPrice();
+  }
+
   @Get()
   findAll(@Req() req, @Query('page') page: number, @Query('limit') limit: number)  {
     return this.ordersService.findAll(req.user.id, +page, +limit);
