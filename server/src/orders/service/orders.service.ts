@@ -36,14 +36,14 @@ export class OrdersService {
    TODO: Need fix this method
    */
   async update(id: string, updateOrderDto: UpdateOrderDto) {
-    const order = await this.orderRepository.findOne({where: { id}});
+    const order = await this.orderRepository.findOne({ where: { id } });
     if (!order) {
       throw new NotFoundException(`Order with id ${id} was not found!`);
     }
 
     const partialOrder: DeepPartial<Order> = {
       ...updateOrderDto,
-      customer: updateOrderDto.customer ? {id: updateOrderDto.customer} : undefined
+      customer: updateOrderDto.customer ? { id: updateOrderDto.customer } : undefined,
     };
 
     try {
@@ -120,13 +120,13 @@ export class OrdersService {
     }
 
     return await this.orderRepository.find({
-      order: {[field]: 'ASC'}
+      order: { [field]: 'ASC' },
     });
   }
 
   async getByTitle(title: string) {
     return await this.orderRepository.find({
-      where: {title},
+      where: { title },
     });
   };
 }
