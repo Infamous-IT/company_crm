@@ -7,6 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TagsModule } from '../tags/tags.module';
 import { CustomerModule } from '../customer/customer.module';
+import { OrdersModule } from '../orders/orders.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CustomerModule } from '../customer/customer.module';
     }),
     TagsModule,
     CustomerModule,
+    OrdersModule
   ],
   controllers: [UserController],
   providers: [UserService],

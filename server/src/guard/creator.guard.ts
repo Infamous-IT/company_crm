@@ -8,13 +8,15 @@ import {
 import { UserService } from '../user/service/user.service';
 import { TagsService } from '../tags/service/tags.service';
 import { CustomerService } from '../customer/service/customer.service';
+import { OrdersService } from '../orders/service/orders.service';
 
 @Injectable()
 export class CreatorGuard implements CanActivate {
   constructor(
     private readonly userService: UserService,
     private readonly tagService: TagsService,
-    private readonly customerService: CustomerService
+    private readonly customerService: CustomerService,
+    private readonly orderService: OrdersService
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -32,6 +34,9 @@ export class CreatorGuard implements CanActivate {
         break;
       case 'customers':
         entity = await this.customerService.findOne(id);
+        break;
+      case 'orders':
+        entity = await this.orderService.findOne(id);
         break;
       default:
         throw new NotFoundException('Something went wrong...');

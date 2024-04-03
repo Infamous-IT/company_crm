@@ -5,10 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Customer } from './entities/customer.entity';
 import { Order } from '../orders/entities/order.entity';
 import { User } from '../user/entities/user.entity';
-import { UserService } from '../user/service/user.service';
-import { TagsService } from '../tags/service/tags.service';
 import { UserModule } from '../user/user.module';
 import { TagsModule } from '../tags/tags.module';
+import { OrdersModule } from '../orders/orders.module';
 
 @Global()
 @Module({
@@ -16,6 +15,7 @@ import { TagsModule } from '../tags/tags.module';
     TypeOrmModule.forFeature([User, Customer, Order]),
     forwardRef(() => UserModule),
     forwardRef(() => TagsModule),
+    forwardRef(() => OrdersModule)
   ],
 
   controllers: [CustomerController],
