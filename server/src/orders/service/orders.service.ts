@@ -13,24 +13,44 @@ export class OrdersService {
   ) {
   }
 
-  async create(createOrderDto: CreateOrderDto, userId: string, customerId: string, tagId: string) {
-    const newOrder: DeepPartial<Order> = {
+  async create(createOrderDto: CreateOrderDto, id: string) {
+
+    const isExisting = await this.orderRepository.findOne({
+      where: {
+        user: { id },
+        title: createOrderDto.title,
+      }
+    });
+
+    if (isExisting) {
+      throw new BadRequestException('This order already exists!');
+    }
+
+    const newOrder = {
       title: createOrderDto.title,
       description: createOrderDto.description,
       price: createOrderDto.price,
       isComplete: createOrderDto.isComplete,
       estimatedTime: createOrderDto.estimatedTime,
-      user: { id: userId },
-      customer: { id: customerId },
-      tags: [{ id: tagId }],
-    };
-
-    try {
-      return await this.orderRepository.save(newOrder);
-    } catch (error) {
-      throw new BadRequestException('Something went wrong by creating a new order!');
+      user: {id}
     }
+
+    return await this.orderRepository.save(newOrder);
   }
+// const newOrder: DeepPartial<Order> = {
+  //   title: createOrderDto.title,
+  //   description: createOrderDto.description,
+  //   price: createOrderDto.price,
+  //   isComplete: createOrderDto.isComplete,
+  //   estimatedTime: createOrderDto.estimatedTime,
+  //   user: { id: userId },
+  // };
+
+  // try {
+  //   return await this.orderRepository.save(newOrder);
+  // } catch (error) {
+  //   throw new BadRequestException('Something went wrong by creating a new order!');
+  // }
 
   /**
    TODO: Need fix this method
@@ -94,13 +114,13 @@ export class OrdersService {
   async remove(id: string) {
     const order = await this.orderRepository.findOne({
       where: { id },
-    });
+    })
 
     if (!order) {
       throw new NotFoundException('Order with id ' + id + ' was not found!');
     }
 
-    return await this.orderRepository.delete(order);
+    return await this.orderRepository.remove(order);
   }
 
   async getTotalPrice() {

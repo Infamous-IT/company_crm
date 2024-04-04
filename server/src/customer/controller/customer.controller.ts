@@ -17,19 +17,19 @@ import { UpdateCustomerDto } from '../dto/update-customer.dto';
 import { JwtAuthGuard } from '../../auth/guards/JwtAuthGuard';
 import { CreatorGuard } from '../../guard/creator.guard';
 
-@Controller('customer')
+@Controller('customers')
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, CreatorGuard)
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe())
   create(@Body() createCustomerDto: CreateCustomerDto, @Req() req) {
     return this.customerService.create(createCustomerDto, req.user.id);
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard, CreatorGuard)
+  @UseGuards(JwtAuthGuard)
   findAll(@Req() req) {
     return this.customerService.findAll(req.user.id);
   }

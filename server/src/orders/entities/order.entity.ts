@@ -23,9 +23,6 @@ export class Order {
     @Column()
     estimatedTime: Date;
 
-    @Column()
-    totalOrders: number;
-
     @OneToMany(() => Tag, (tag) => tag.order, {
         onDelete: 'CASCADE'
     })

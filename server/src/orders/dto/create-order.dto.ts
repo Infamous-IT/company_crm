@@ -1,36 +1,36 @@
-import {Tag} from '../../tags/entities/tag.entity';
-import {User} from '../../user/entities/user.entity';
-import {IsCurrency, IsNotEmpty, IsNumber, IsOptional, MaxLength, MinLength } from 'class-validator';
+import { Tag } from '../../tags/entities/tag.entity';
+import { User } from '../../user/entities/user.entity';
+import { IsNotEmpty, IsOptional, MaxLength, MinLength } from 'class-validator';
 
 export class CreateOrderDto {
-    @IsNotEmpty()
-    @MinLength(10)
-    @MaxLength(50)
-    title: string;
+  @IsNotEmpty()
+  @MinLength(10)
+  @MaxLength(200)
+  title: string;
 
-    @IsNotEmpty()
-    @MinLength(10)
-    @MaxLength(5000)
-    description: string;
+  @IsNotEmpty()
+  @MinLength(10)
+  @MaxLength(5000)
+  description: string;
 
-    @IsNotEmpty()
-    @IsCurrency({allow_decimal: true})
-    price: number;
+  @IsNotEmpty()
+    // @IsCurrency({allow_decimal: true})
+  price: number;
 
-    @IsOptional()
-    @MinLength(5)
-    @MaxLength(35)
-    customer?: string;
+  @IsOptional()
+  @MinLength(5)
+  @MaxLength(35)
+  customer?: string;
 
-    @IsNotEmpty()
-    isComplete: boolean;
+  @IsNotEmpty()
+  isComplete: boolean;
 
-    @IsOptional()
-    estimatedTime?: Date;
+  @IsOptional()
+  estimatedTime?: Date;
 
-    @IsOptional()
-    tags?: Tag[];
+  @IsOptional()
+  tags?: Tag[];
 
-    @IsOptional()
-    user?: User;
+  @IsOptional()
+  user?: User;
 }

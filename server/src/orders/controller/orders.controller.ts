@@ -5,18 +5,21 @@ import { UpdateOrderDto } from '../dto/update-order.dto';
 import { JwtAuthGuard } from '../../auth/guards/JwtAuthGuard';
 import { CreatorGuard } from '../../guard/creator.guard';
 
-@Controller('order')
+@Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  @Post(':type/')
-  @UseGuards(JwtAuthGuard, CreatorGuard)
+  @Post()
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe())
   create(@Body() createOrderDto: CreateOrderDto, @Req() req) {
-    const user = req.user.id;
-    const customer = req.customers.id;
-    const tags = req.tags.id;
-    return this.ordersService.create(createOrderDto, user, customer, tags);
+    return this.ordersService.create(createOrderDto, req.user.id);
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  findAll(@Req() req, @Query('page') page: number, @Query('limit') limit: number)  {
+    return this.ordersService.findAll(req.user.id, +page, +limit);
   }
 
   @Get(':type/get_by_title')
@@ -29,12 +32,6 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard, CreatorGuard)
   getTotalPrice(){
     return this.ordersService.getTotalPrice();
-  }
-
-  @Get(':type/')
-  @UseGuards(JwtAuthGuard, CreatorGuard)
-  findAll(@Req() req, @Query('page') page: number, @Query('limit') limit: number)  {
-    return this.ordersService.findAll(req.user.id, +page, +limit);
   }
 
   @Get(':type/:id')
