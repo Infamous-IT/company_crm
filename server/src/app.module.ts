@@ -7,7 +7,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { OrdersModule } from './orders/orders.module';
 import { TagsModule } from './tags/tags.module';
-import AWS from 'aws-sdk';
+import * as AWS from 'aws-sdk';
 
 @Module({
   imports: [
@@ -27,14 +27,14 @@ import AWS from 'aws-sdk';
               synchronize: true,
               type: 'postgres',
               username: configService.get('DB_USERNAME'),
-              extra: {
+              // extra: {
                   // ssl: {
                   //     rejectUnauthorized: false,
                   // },
-                  aws_rds: true,
-                  aws_secret_name: configService.get('AWS_RESOURCE_NAME'),
-                  aws_region: configService.get('AWS_REGION')
-              }
+              //     aws_rds: true,
+              //     aws_secret_name: configService.get('AWS_RESOURCE_NAME'),
+              //     aws_region: configService.get('AWS_REGION')
+              // }
           }),
           inject: [ConfigService],
       }),
@@ -42,4 +42,14 @@ import AWS from 'aws-sdk';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+    constructor(configService: ConfigService) {
+        AWS.config.update({
+            region: configService.get('AWS_REGION'),
+            credentials: {
+                secretAccessKey: configService.get('AWS_SECRET_ACCESS_KEY'),
+                accessKeyId: configService.get('AWS_ACCESS_KEY')
+            }
+        })
+    }
+}
