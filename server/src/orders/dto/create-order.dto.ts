@@ -1,6 +1,7 @@
 import { Tag } from '../../tags/entities/tag.entity';
 import { User } from '../../user/entities/user.entity';
 import { IsNotEmpty, IsOptional, MaxLength, MinLength } from 'class-validator';
+import { Status } from '../../utils/enums/status';
 
 export class CreateOrderDto {
   @IsNotEmpty()
@@ -14,7 +15,7 @@ export class CreateOrderDto {
   description: string;
 
   @IsNotEmpty()
-    // @IsCurrency({allow_decimal: true})
+  // @IsCurrency({allow_decimal: true})
   price: number;
 
   @IsOptional()
@@ -24,6 +25,11 @@ export class CreateOrderDto {
 
   @IsNotEmpty()
   isComplete: boolean;
+
+  @IsOptional()
+  uniqueName?: string;
+
+  status: Status;
 
   @IsOptional()
   estimatedTime?: Date;

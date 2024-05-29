@@ -9,17 +9,15 @@ import { DeepPartial, Repository } from 'typeorm';
 export class OrdersService {
   constructor(
     @InjectRepository(Order)
-    private readonly orderRepository: Repository<Order>,
-  ) {
-  }
+    private readonly orderRepository: Repository<Order>
+  ) {}
 
   async create(createOrderDto: CreateOrderDto, id: string) {
-
     const isExisting = await this.orderRepository.findOne({
       where: {
         user: { id },
-        title: createOrderDto.title,
-      }
+        uniqueName: createOrderDto.uniqueName,
+      },
     });
 
     if (isExisting) {
@@ -32,25 +30,13 @@ export class OrdersService {
       price: createOrderDto.price,
       isComplete: createOrderDto.isComplete,
       estimatedTime: createOrderDto.estimatedTime,
-      user: {id}
-    }
+      uniqueName: createOrderDto.title + Math.random(),
+      status: createOrderDto.status,
+      user: { id },
+    };
 
     return await this.orderRepository.save(newOrder);
   }
-// const newOrder: DeepPartial<Order> = {
-  //   title: createOrderDto.title,
-  //   description: createOrderDto.description,
-  //   price: createOrderDto.price,
-  //   isComplete: createOrderDto.isComplete,
-  //   estimatedTime: createOrderDto.estimatedTime,
-  //   user: { id: userId },
-  // };
-
-  // try {
-  //   return await this.orderRepository.save(newOrder);
-  // } catch (error) {
-  //   throw new BadRequestException('Something went wrong by creating a new order!');
-  // }
 
   /**
    TODO: Need fix this method
@@ -114,7 +100,7 @@ export class OrdersService {
   async remove(id: string) {
     const order = await this.orderRepository.findOne({
       where: { id },
-    })
+    });
 
     if (!order) {
       throw new NotFoundException('Order with id ' + id + ' was not found!');
@@ -148,5 +134,5 @@ export class OrdersService {
     return await this.orderRepository.find({
       where: { title },
     });
-  };
+  }
 }

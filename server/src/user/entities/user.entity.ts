@@ -8,7 +8,7 @@ import {
 import { OneToMany } from 'typeorm/decorator/relations/OneToMany';
 import { Order } from '../../orders/entities/order.entity';
 import { Tag } from '../../tags/entities/tag.entity';
-import { Roles } from './roles';
+import { Roles } from '../../utils/enums/roles';
 import { Customer } from 'src/customer/entities/customer.entity';
 
 @Entity()
