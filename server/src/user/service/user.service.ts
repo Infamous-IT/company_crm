@@ -1,18 +1,25 @@
-import {BadRequestException, Injectable, NotFoundException, UnauthorizedException} from '@nestjs/common';
-import { CreateUserDto, FacebookUserDto } from '../dto/create-user.dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import {User} from '../entities/user.entity';
+import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
-import {JwtService} from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(User) private readonly userRepository: Repository<User>, private readonly jwtService: JwtService) {
-  }
+  constructor(
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService
+  ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto, photoUrl?: string) {
     const existingUser = await this.userRepository.findOne({
       where: {
         email: createUserDto.email,
@@ -22,30 +29,45 @@ export class UserService {
     if (existingUser) throw new BadRequestException('This email already exists');
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
     const user = await this.userRepository.save({
       email: createUserDto.email,
       firstName: createUserDto.firstName,
       lastName: createUserDto.lastName,
       password: hashedPassword,
-      // uniqueId: createUserDto.uniqueId
-      ...(createUserDto.uniqueId && {uniqueId: createUserDto.uniqueId}),
+      photoUrl: createUserDto.photoUrl,
+      ...(createUserDto.uniqueId && { uniqueId: createUserDto.uniqueId }),
     });
-    // console.log(user);
-    // console.log(JSON.stringify(createUserDto) + 'dtp');
 
-    const token = this.jwtService.sign({email: createUserDto.email});
+    const token = this.jwtService.sign({ email: createUserDto.email });
 
-    return {user, token};
+    return { user, token };
+  }
+
+  async getCurrentUser(request) {
+    const currentUser = await this.userRepository.findOne({
+      ...(request.user.email && {
+        where: {
+          email: request.user.email,
+        },
+      }),
+      relations: {
+        customers: true,
+        orders: true,
+        tags: true,
+      },
+    });
+    return { currentUser };
   }
 
   async createSSOPassword(id: string, updateUserDto: UpdateUserDto) {
-    const existingUser = await this.userRepository.findOne({where: {id}});
+    const existingUser = await this.userRepository.findOne({ where: { id } });
 
     if (!existingUser) throw new NotFoundException(`User with id ${id} was not found`);
 
     const hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
 
-    return await this.userRepository.update(id, {...updateUserDto, password: hashedPassword});
+    return await this.userRepository.update(id, { ...updateUserDto, password: hashedPassword });
   }
 
   async findAll(page: number, limit: number, isAdmin: boolean) {
@@ -69,12 +91,14 @@ export class UserService {
   }
 
   async findOneById(id: string) {
-    const user = await this.userRepository.findOne({where: {id},
+    const user = await this.userRepository.findOne({
+      where: { id },
       relations: {
         orders: true,
         tags: true,
-        customers: true
-      }});
+        customers: true,
+      },
+    });
     return user;
   }
 
@@ -84,8 +108,8 @@ export class UserService {
       relations: {
         orders: true,
         tags: true,
-        customers: true
-      }
+        customers: true,
+      },
     });
 
     if (!user) throw new NotFoundException(`User with email ${email} was not found`);
@@ -98,8 +122,8 @@ export class UserService {
       relations: {
         orders: true,
         tags: true,
-        customers: true
-      }
+        customers: true,
+      },
     });
 
     if (!user) throw new NotFoundException(`User with id ${id} was not found`);
@@ -109,7 +133,7 @@ export class UserService {
 
   async remove(id: string) {
     const user = await this.userRepository.findOne({
-      where: { id}
+      where: { id },
     });
 
     if (!user) throw new NotFoundException(`User with id ${id} was not found`);

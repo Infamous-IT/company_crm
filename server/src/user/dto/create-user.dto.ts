@@ -15,6 +15,8 @@ export class CreateUserDto {
 
     @IsOptional()
     uniqueId?: string;
+
+    photoUrl?: string;
 }
 
 export class FacebookUserDto extends CreateUserDto {

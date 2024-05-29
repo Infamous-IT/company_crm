@@ -8,14 +8,15 @@ import { OrdersService } from '../orders/service/orders.service';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/service/user.service';
 import { UserModule } from '../user/user.module';
+import {GoogleStorageService} from "../user/service/google-storage.service";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Tag, Order, User]),
-    forwardRef(() => UserModule)
+    forwardRef(() => UserModule),
   ],
   controllers: [TagsController],
-  providers: [TagsService, OrdersService, UserService],
+  providers: [TagsService, OrdersService, UserService, GoogleStorageService],
   exports: [TagsService]
 })
 export class TagsModule {

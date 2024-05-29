@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TagsModule } from '../tags/tags.module';
 import { CustomerModule } from '../customer/customer.module';
 import { OrdersModule } from '../orders/orders.module';
+import {GoogleStorageService} from "./service/google-storage.service";
 
 @Module({
   imports: [
@@ -22,10 +23,10 @@ import { OrdersModule } from '../orders/orders.module';
     }),
     TagsModule,
     CustomerModule,
-    OrdersModule
+    OrdersModule,
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, GoogleStorageService],
   exports: [UserService, JwtModule],
 })
 export class UserModule {}
