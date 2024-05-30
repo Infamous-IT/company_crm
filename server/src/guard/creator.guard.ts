@@ -21,13 +21,13 @@ export class CreatorGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const { id, type } = request.params;
+    const { id, type, email } = request.params;
 
     let entity;
 
     switch (type) {
       case 'user':
-        entity = await this.userService.findOneById(id);
+        entity = await this.userService.findOneByEmail(email);
         break;
       case 'tag':
         entity = await this.tagService.findOne(id);
@@ -42,9 +42,9 @@ export class CreatorGuard implements CanActivate {
         throw new NotFoundException('Something went wrong...');
     }
 
-    const userIdFromRequest = request.user?.id;
+    const userIdFromRequest = request.user?.email;
 
-    if (entity?.user?.id || (entity && entity.id === userIdFromRequest)) {
+    if (entity?.user?.email || (entity && entity.email === userIdFromRequest)) {
       return true;
     }
 

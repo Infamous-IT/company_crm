@@ -36,6 +36,8 @@ export class UserService {
       lastName: createUserDto.lastName,
       password: hashedPassword,
       photoUrl: createUserDto.photoUrl,
+      income: createUserDto.income,
+      costs: createUserDto.costs,
       ...(createUserDto.uniqueId && { uniqueId: createUserDto.uniqueId }),
     });
 

@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+  Query,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { OrdersService } from '../service/orders.service';
 import { CreateOrderDto } from '../dto/create-order.dto';
 import { UpdateOrderDto } from '../dto/update-order.dto';
@@ -18,7 +31,7 @@ export class OrdersController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  findAll(@Req() req, @Query('page') page: number, @Query('limit') limit: number)  {
+  findAll(@Req() req, @Query('page') page: number, @Query('limit') limit: number) {
     return this.ordersService.findAll(req.user.id, +page, +limit);
   }
 
@@ -30,7 +43,7 @@ export class OrdersController {
 
   @Get(':type/total_price')
   @UseGuards(JwtAuthGuard, CreatorGuard)
-  getTotalPrice(){
+  getTotalPrice() {
     return this.ordersService.getTotalPrice();
   }
 

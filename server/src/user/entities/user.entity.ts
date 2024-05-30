@@ -34,7 +34,12 @@ export class User {
   @Column({ nullable: true })
   photoUrl: string;
 
-  @Column({ nullable: true })
+  @Column({ default: 0 })
+  income: number;
+
+  @Column({ default: 0 })
+  costs: number;
+
   @Column({ type: 'enum', enum: Roles, default: Roles.USER })
   role: Roles;
 
