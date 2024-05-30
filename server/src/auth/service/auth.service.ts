@@ -1,20 +1,23 @@
-import {Injectable, UnauthorizedException} from '@nestjs/common';
-import {UserService} from '../../user/service/user.service';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { UserService } from '../../user/service/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import {IGoogleUser, IUser} from '../../utils/types/types';
-import {CreateUserDto} from '../../user/dto/create-user.dto';
-import {User} from '../../user/entities/user.entity';
+import { IUser } from '../../utils/types/types';
+import { CreateUserDto } from '../../user/dto/create-user.dto';
+import { User } from '../../user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly userService: UserService, private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService
+  ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.userService.findOne(email);
     const passwordIsMatch = await bcrypt.compare(password, user.password);
 
-    if(user && passwordIsMatch) {
+    if (user && passwordIsMatch) {
       return user;
     }
     throw new UnauthorizedException('Email or password was incorrect!');
@@ -22,26 +25,26 @@ export class AuthService {
 
   async register(createUserDto: CreateUserDto): Promise<{
     user: { firstName: string; lastName: string; password: any; email: string } & User;
-    token: string
+    token: string;
   }> {
     return await this.userService.create(createUserDto);
   }
 
   async login(user: IUser) {
-    const {id, email} = user;
+    const { id, email } = user;
     return {
       id,
       email,
       token: this.jwtService.sign({
         id: user.id,
-        email: user.email
-      })
-    }
+        email: user.email,
+      }),
+    };
   }
 
   async googleLogin(req) {
-    const {email, accessToken, firstName, lastName } = req.user;
-    console.log(req)
+    const { email, accessToken, firstName, lastName } = req.user;
+    console.log(req);
     if (!accessToken) {
       return 'No user from google';
     }
@@ -50,11 +53,13 @@ export class AuthService {
 
     if (!existingUser) {
       const createUserDto: CreateUserDto = {
+        costs: 0,
+        income: 0,
         email: email,
         firstName: firstName,
         lastName: lastName ?? '',
-        password: '11111111'
-      }
+        password: '11111111',
+      };
 
       return await this.userService.create(createUserDto);
     }
@@ -64,9 +69,9 @@ export class AuthService {
       user: req.user,
       token: this.jwtService.sign({
         id: new Date().getTime(),
-        email: email
-      })
-    }
+        email: email,
+      }),
+    };
   }
 
   async facebookSSOLogin(req) {
@@ -83,12 +88,14 @@ export class AuthService {
 
     if (!existingUser) {
       const createUserDto: CreateUserDto = {
+        costs: 0,
+        income: 0,
         email: email,
         firstName: firstName,
         lastName: lastName ?? '',
         password: '11111111',
-        uniqueId: uniqueId
-      }
+        uniqueId: uniqueId,
+      };
       // console.log(req.user.user.uniqueId);
       const newUser = await this.userService.create(createUserDto);
 
@@ -98,8 +105,8 @@ export class AuthService {
         user: newUser,
         token: this.jwtService.sign({
           id: new Date().getTime(),
-          email: email
-        })
+          email: email,
+        }),
       };
     } else {
       return {
@@ -107,9 +114,9 @@ export class AuthService {
         user: req.user,
         token: this.jwtService.sign({
           id: new Date().getTime(),
-          email: email
-        })
-      }
+          email: email,
+        }),
+      };
     }
   }
 }

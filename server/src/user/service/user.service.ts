@@ -8,7 +8,7 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
@@ -72,25 +72,56 @@ export class UserService {
     return await this.userRepository.update(id, { ...updateUserDto, password: hashedPassword });
   }
 
-  async findAll(page: number, limit: number, isAdmin: boolean) {
+  async findAll(
+    page: number,
+    limit: number,
+    isAdmin: boolean,
+    sortField: string = 'createdAt',
+    sortOrder: 'ASC' | 'DESC' = 'DESC',
+    filterField?: string,
+    filterValue?: string | number
+  ) {
     if (!isAdmin) {
       throw new UnauthorizedException('You are not authorized to access this resource.');
     }
-    const users = await this.userRepository.find({
-      relations: {
-        orders: true,
-        customers: true,
-        tags: true,
-      },
+
+    const query: FindManyOptions<User> = {
+      relations: ['orders', 'customers', 'tags'],
       order: {
-        createdAt: 'DESC',
+        [sortField]: sortOrder,
       },
       take: limit,
       skip: (page - 1) * limit,
-    });
+    };
+
+    if (filterField && filterValue !== undefined) {
+      query.where = { [filterField]: filterValue };
+    }
+
+    const users = await this.userRepository.find(query);
 
     return users;
   }
+
+  // async findAll(page: number, limit: number, isAdmin: boolean) {
+  //   if (!isAdmin) {
+  //     throw new UnauthorizedException('You are not authorized to access this resource.');
+  //   }
+  //   const users = await this.userRepository.find({
+  //     relations: {
+  //       orders: true,
+  //       customers: true,
+  //       tags: true,
+  //     },
+  //     order: {
+  //       createdAt: 'DESC',
+  //     },
+  //     take: limit,
+  //     skip: (page - 1) * limit,
+  //   });
+  //
+  //   return users;
+  // }
 
   async findOneById(id: string) {
     const user = await this.userRepository.findOne({

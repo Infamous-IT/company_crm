@@ -11,7 +11,9 @@ import {
   Query,
   UseGuards,
   UseInterceptors,
-  UploadedFile, Req,
+  UploadedFile,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from '../service/user.service';
 import { CreateUserDto } from '../dto/create-user.dto';
@@ -20,7 +22,9 @@ import { JwtAuthGuard } from '../../auth/guards/JwtAuthGuard';
 import { CreatorGuard } from '../../guard/creator.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
+import { Request } from 'express';
 import { GoogleStorageService } from '../service/google-storage.service';
+import { Roles } from '../../utils/enums/roles';
 
 @Controller('users')
 export class UserController {
@@ -39,21 +43,52 @@ export class UserController {
   @Patch(':type/:id/uploadPhoto')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('photoUrl'))
-  async uploadedPhoto(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @UploadedFile() photoFile: Multer.File) {
+  async uploadedPhoto(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @UploadedFile() photoFile: Multer.File
+  ) {
     const photoUrl = await this.googleStorageService.uploadPhoto(photoFile);
     return { photoUrl };
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  findAll(
-    @Query('page') page: number,
-    @Query('limit') limit: number,
-    @Query('isAdmin') isAdmin: boolean
+  async findAll(
+    @Req() req: Request,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+    @Query('sortField') sortField: string = 'createdAt',
+    @Query('sortOrder') sortOrder: 'ASC' | 'DESC' = 'DESC',
+    @Query('filterField') filterField?: string,
+    @Query('filterValue') filterValue?: string | number
   ) {
-    return this.userService.findAll(page, limit, isAdmin);
+    const userRole = req.user['role'];
+    const isAdmin = userRole === Roles.ADMIN;
+
+    if (!isAdmin) {
+      throw new UnauthorizedException('You are not authorized to access this resource.');
+    }
+    return this.userService.findAll(
+      page,
+      limit,
+      isAdmin,
+      sortField,
+      sortOrder,
+      filterField,
+      filterValue
+    );
   }
 
+  // @Get()
+  // @UseGuards(JwtAuthGuard)
+  // findAll(
+  //   @Query('page') page: number,
+  //   @Query('limit') limit: number,
+  //   @Query('isAdmin') isAdmin: boolean
+  // ) {
+  //   return this.userService.findAll(page, limit, isAdmin);
+  // }
   @Get(':type/:id')
   @UseGuards(JwtAuthGuard, CreatorGuard)
   findOne(@Param('id') id: string) {
