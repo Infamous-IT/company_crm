@@ -1,14 +1,9 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { FindManyOptions, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
@@ -37,6 +32,7 @@ export class UserService {
       password: hashedPassword,
       photoUrl: createUserDto.photoUrl,
       income: createUserDto.income,
+      role: createUserDto.role,
       costs: createUserDto.costs,
       ...(createUserDto.uniqueId && { uniqueId: createUserDto.uniqueId }),
     });
@@ -75,53 +71,31 @@ export class UserService {
   async findAll(
     page: number,
     limit: number,
-    isAdmin: boolean,
-    sortField: string = 'createdAt',
-    sortOrder: 'ASC' | 'DESC' = 'DESC',
+    sortField: string,
+    sortOrder: 'ASC' | 'DESC',
     filterField?: string,
     filterValue?: string | number
   ) {
-    if (!isAdmin) {
-      throw new UnauthorizedException('You are not authorized to access this resource.');
+    const query = this.userRepository.createQueryBuilder('user');
+
+    if (filterField && filterValue) {
+      query.where(`user.${filterField} LIKE :filterValue`, { filterValue: `%${filterValue}%` });
     }
 
-    const query: FindManyOptions<User> = {
-      relations: ['orders', 'customers', 'tags'],
-      order: {
-        [sortField]: sortOrder,
-      },
-      take: limit,
-      skip: (page - 1) * limit,
+    query
+      .orderBy(`user.${sortField}`, sortOrder)
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const [users, total] = await query.getManyAndCount();
+
+    return {
+      data: users,
+      total,
+      page,
+      limit,
     };
-
-    if (filterField && filterValue !== undefined) {
-      query.where = { [filterField]: filterValue };
-    }
-
-    const users = await this.userRepository.find(query);
-
-    return users;
   }
-
-  // async findAll(page: number, limit: number, isAdmin: boolean) {
-  //   if (!isAdmin) {
-  //     throw new UnauthorizedException('You are not authorized to access this resource.');
-  //   }
-  //   const users = await this.userRepository.find({
-  //     relations: {
-  //       orders: true,
-  //       customers: true,
-  //       tags: true,
-  //     },
-  //     order: {
-  //       createdAt: 'DESC',
-  //     },
-  //     take: limit,
-  //     skip: (page - 1) * limit,
-  //   });
-  //
-  //   return users;
-  // }
 
   async findOneById(id: string) {
     const user = await this.userRepository.findOne({

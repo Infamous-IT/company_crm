@@ -1,19 +1,18 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UsePipes,
-  ValidationPipe,
+  Get,
+  Param,
+  Patch,
+  Post,
   Query,
+  Req,
+  UploadedFile,
   UseGuards,
   UseInterceptors,
-  UploadedFile,
-  Req,
-  UnauthorizedException,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from '../service/user.service';
 import { CreateUserDto } from '../dto/create-user.dto';
@@ -24,7 +23,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 import { Request } from 'express';
 import { GoogleStorageService } from '../service/google-storage.service';
-import { Roles } from '../../utils/enums/roles';
 
 @Controller('users')
 export class UserController {
@@ -32,6 +30,20 @@ export class UserController {
     private readonly userService: UserService,
     private readonly googleStorageService: GoogleStorageService
   ) {}
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  async findAll(
+    @Req() req: Request,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+    @Query('sortField') sortField: string = 'createdAt',
+    @Query('sortOrder') sortOrder: 'ASC' | 'DESC' = 'DESC',
+    @Query('filterField') filterField?: string,
+    @Query('filterValue') filterValue?: string | number
+  ) {
+    return this.userService.findAll(page, limit, sortField, sortOrder, filterField, filterValue);
+  }
 
   @Post()
   @UsePipes(new ValidationPipe())
@@ -52,43 +64,6 @@ export class UserController {
     return { photoUrl };
   }
 
-  @Get()
-  @UseGuards(JwtAuthGuard)
-  async findAll(
-    @Req() req: Request,
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 20,
-    @Query('sortField') sortField: string = 'createdAt',
-    @Query('sortOrder') sortOrder: 'ASC' | 'DESC' = 'DESC',
-    @Query('filterField') filterField?: string,
-    @Query('filterValue') filterValue?: string | number
-  ) {
-    const userRole = req.user['role'];
-    const isAdmin = userRole === Roles.ADMIN;
-
-    if (!isAdmin) {
-      throw new UnauthorizedException('You are not authorized to access this resource.');
-    }
-    return this.userService.findAll(
-      page,
-      limit,
-      isAdmin,
-      sortField,
-      sortOrder,
-      filterField,
-      filterValue
-    );
-  }
-
-  // @Get()
-  // @UseGuards(JwtAuthGuard)
-  // findAll(
-  //   @Query('page') page: number,
-  //   @Query('limit') limit: number,
-  //   @Query('isAdmin') isAdmin: boolean
-  // ) {
-  //   return this.userService.findAll(page, limit, isAdmin);
-  // }
   @Get(':type/:id')
   @UseGuards(JwtAuthGuard, CreatorGuard)
   findOne(@Param('id') id: string) {

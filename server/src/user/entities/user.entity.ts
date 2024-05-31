@@ -40,7 +40,7 @@ export class User {
   @Column({ default: 0 })
   costs: number;
 
-  @Column({ type: 'enum', enum: Roles, default: Roles.USER })
+  @Column({ type: 'enum', enum: Roles })
   role: Roles;
 
   @OneToMany(() => Order, order => order.user, {

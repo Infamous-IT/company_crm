@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { IUser } from '../../utils/types/types';
 import { CreateUserDto } from '../../user/dto/create-user.dto';
 import { User } from '../../user/entities/user.entity';
+import { Roles } from '../../utils/enums/roles';
 
 @Injectable()
 export class AuthService {
@@ -31,19 +32,31 @@ export class AuthService {
   }
 
   async login(user: IUser) {
-    const { id, email } = user;
+    const { id, email, role } = user;
     return {
       id,
       email,
+      role,
       token: this.jwtService.sign({
         id: user.id,
         email: user.email,
+        role: user.role,
       }),
     };
   }
 
+  async logout(token: string, userId: string): Promise<void> {
+    try {
+      const decodedToken = this.jwtService.decode(token) as { id: string };
+      console.log(decodedToken.id);
+      return null;
+    } catch (e) {
+      throw new UnauthorizedException('Logout failed');
+    }
+  }
+
   async googleLogin(req) {
-    const { email, accessToken, firstName, lastName } = req.user;
+    const { email, accessToken, firstName, lastName, role } = req.user;
     console.log(req);
     if (!accessToken) {
       return 'No user from google';
@@ -59,6 +72,7 @@ export class AuthService {
         firstName: firstName,
         lastName: lastName ?? '',
         password: '11111111',
+        role: Roles.USER,
       };
 
       return await this.userService.create(createUserDto);
@@ -70,13 +84,14 @@ export class AuthService {
       token: this.jwtService.sign({
         id: new Date().getTime(),
         email: email,
+        role: role,
       }),
     };
   }
 
   async facebookSSOLogin(req) {
     const { user } = req.user;
-    const { uniqueId, email, accessToken, firstName, lastName } = user;
+    const { uniqueId, email, accessToken, firstName, lastName, role } = user;
 
     if (!accessToken) {
       return 'No user from facebook';
@@ -95,6 +110,7 @@ export class AuthService {
         lastName: lastName ?? '',
         password: '11111111',
         uniqueId: uniqueId,
+        role: Roles.USER,
       };
       // console.log(req.user.user.uniqueId);
       const newUser = await this.userService.create(createUserDto);
@@ -106,6 +122,7 @@ export class AuthService {
         token: this.jwtService.sign({
           id: new Date().getTime(),
           email: email,
+          role: role,
         }),
       };
     } else {
@@ -115,6 +132,7 @@ export class AuthService {
         token: this.jwtService.sign({
           id: new Date().getTime(),
           email: email,
+          role: role,
         }),
       };
     }

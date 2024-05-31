@@ -1,4 +1,5 @@
 import { IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
+import { Roles } from '../../utils/enums/roles';
 
 export class CreateUserDto {
   @MinLength(2, { message: 'First name must be more than 2 characters!' })
@@ -17,6 +18,9 @@ export class CreateUserDto {
   uniqueId?: string;
 
   photoUrl?: string;
+
+  @IsNotEmpty()
+  role: Roles;
 
   income: number;
 

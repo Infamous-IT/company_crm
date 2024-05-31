@@ -1,12 +1,12 @@
-import {Body, Controller, Get, Post, Redirect, Request, UseGuards} from '@nestjs/common';
+import { Body, Controller, Get, Post, Redirect, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from '../service/auth.service';
-import {LocalAuthGuard} from '../guards/local-auth.guard';
-import {JwtAuthGuard} from '../guards/JwtAuthGuard';
-import {GoogleOAuthGuard} from '../guards/google-oauth.guard';
-import {CreateUserDto} from '../../user/dto/create-user.dto';
+import { LocalAuthGuard } from '../guards/local-auth.guard';
+import { JwtAuthGuard } from '../guards/JwtAuthGuard';
+import { GoogleOAuthGuard } from '../guards/google-oauth.guard';
+import { CreateUserDto } from '../../user/dto/create-user.dto';
 import { Response } from 'express';
-import {HttpStatus} from '@nestjs/common/enums/http-status.enum';
-import {Req, Res} from '@nestjs/common/decorators/http/route-params.decorator';
+import { HttpStatus } from '@nestjs/common/enums/http-status.enum';
+import { Req, Res } from '@nestjs/common/decorators/http/route-params.decorator';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
@@ -26,6 +26,22 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@Request() req, @Res() res: Response) {
+    try {
+      const token = req.headers.authorization.split(' ')[1];
+      const userId = req.user.id;
+      await this.authService.logout(token, userId);
+      return res.status(HttpStatus.NO_CONTENT).send();
+    } catch (e) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'An error occurred while logging out',
+        error: e.message,
+      });
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Request() req) {
     return req.user;
@@ -33,9 +49,7 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
-  async auth() {
-
-  }
+  async auth() {}
 
   @Get('google/callback')
   @UseGuards(GoogleOAuthGuard)
@@ -52,22 +66,19 @@ export class AuthController {
     } catch (e) {
       return {
         message: 'Google login failed',
-        error: e.message
-      }
+        error: e.message,
+      };
     }
   }
 
   @Get('facebook')
   @UseGuards(AuthGuard('facebook'))
-  async facebookLogin() {
-
-  }
+  async facebookLogin() {}
 
   // when i use domain & host, i need to replace data in Facebook For Developers (website link and domain name)
   @Get('facebook/callback')
   @UseGuards(AuthGuard('facebook'))
   async facebookAuthCallback(@Req() req, @Res() res: Response) {
-
     try {
       const result = await this.authService.facebookSSOLogin(req);
 
@@ -81,8 +92,8 @@ export class AuthController {
     } catch (e) {
       return {
         message: 'Facebook login failed',
-        error: e.message
-      }
+        error: e.message,
+      };
     }
   }
 }
