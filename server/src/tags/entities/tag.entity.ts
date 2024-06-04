@@ -1,30 +1,47 @@
-import {Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from "typeorm";
-import {User} from '../../user/entities/user.entity';
-import {Order} from '../../orders/entities/order.entity';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { User } from '../../user/entities/user.entity';
+import { Order } from '../../orders/entities/order.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
 export class Tag {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+  @PrimaryGeneratedColumn('uuid')
+  @ApiProperty()
+  id: string;
 
-    @Column()
-    title: string;
+  @Column()
+  @ApiProperty()
+  title: string;
 
-    @ManyToOne(() => User, (user) => user.tags, {
-        onDelete: 'SET NULL'
-    })
-    @JoinColumn({ name: 'user_id' })
-    user: User;
+  @ManyToOne(() => User, user => user.tags, {
+    onDelete: 'SET NULL',
+    lazy: true,
+  })
+  @JoinColumn({ name: 'user_id' })
+  @ApiProperty({ type: () => User })
+  user: User;
 
-    @ManyToOne(() => Order, (order) => order.tags, {
-        onDelete: 'SET NULL'
-    })
-    @JoinColumn({ name: 'order_id' })
-    order: Order;
+  @ManyToOne(() => Order, order => order.tags, {
+    onDelete: 'SET NULL',
+    lazy: true,
+  })
+  @JoinColumn({ name: 'order_id' })
+  @ApiProperty({ type: () => Order })
+  order: Order;
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @CreateDateColumn()
+  @ApiProperty()
+  createdAt: Date;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+  @UpdateDateColumn()
+  @ApiProperty()
+  updatedAt: Date;
 }

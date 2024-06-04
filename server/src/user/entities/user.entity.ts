@@ -56,18 +56,20 @@ export class User {
 
   @OneToMany(() => Order, order => order.user, {
     onDelete: 'CASCADE',
+    lazy: true
   })
-  @ApiProperty()
+  @ApiProperty({ type: () => [Order] })
   orders: Order[];
 
   @OneToMany(() => Tag, tag => tag.user, {
     onDelete: 'CASCADE',
+    lazy: true
   })
-  @ApiProperty()
+  @ApiProperty({ type: () => [Tag] })
   tags: Tag[];
 
-  @OneToMany(() => Customer, customer => customer.user)
-  @ApiProperty()
+  @OneToMany(() => Customer, customer => customer.user, {lazy: true})
+  @ApiProperty({ type: () => [Customer] })
   customers: Customer[];
 
   @CreateDateColumn()
