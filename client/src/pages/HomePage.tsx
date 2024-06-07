@@ -1,8 +1,8 @@
 import {FC} from 'react';
-const Home:FC = () => {
+const HomePage:FC = () => {
   return (
     <div>Home page</div>
   )
 }
 
-export default Home;
+export default HomePage;

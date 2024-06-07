@@ -9,11 +9,23 @@ import { HttpStatus } from '@nestjs/common/enums/http-status.enum';
 import { Req, Res } from '@nestjs/common/decorators/http/route-params.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../../utils/enums/roles';
+import { UserService } from '../../user/service/user.service';
+import { OAuth2Client } from 'google-auth-library';
+import * as process from 'process';
+
+const client = new OAuth2Client({
+  clientId: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+});
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService
+  ) {}
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
@@ -105,5 +117,35 @@ export class AuthController {
         error: e.message,
       };
     }
+  }
+
+  @Post('google-login')
+  async googleLogin(@Body('token') token): Promise<any> {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    console.log(payload);
+    const existingUser = await this.userService.findOneByEmail(payload.email);
+
+    if (!existingUser) {
+      const createUserDto: CreateUserDto = {
+        email: payload.email,
+        firstName: payload.given_name,
+        lastName: payload.family_name ?? '',
+        password: '11111111',
+        costs: 0,
+        income: 0,
+        role: Roles.USER,
+      };
+      await this.userService.create(createUserDto);
+    }
+    return await this.authService.login({
+      id: payload.aud,
+      email: payload.email,
+      role: Roles.USER,
+    });
   }
 }
