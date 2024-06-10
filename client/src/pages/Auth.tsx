@@ -1,8 +1,8 @@
 import type { FormProps } from "antd";
-import { Button, Checkbox, Form, Input, Typography } from "antd";
-import { toast } from "react-toastify";
+import {Button, Form, Input, message, Tag, Typography} from "antd";
 import useApi from "../hooks/useApi.ts";
 import { useAuth } from "../hooks/useAuth.tsx";
+import {useState} from "react";
 
 type FieldType = {
   firstName: string;
@@ -12,6 +12,15 @@ type FieldType = {
   role: boolean;
 };
 
+type RequiredMark = boolean | 'optional' | 'customize';
+
+const customizeRequiredMark = (label: React.ReactNode, { required }: { required: boolean }) => (
+    <>
+      {required ? <Tag color="error">Required</Tag> : <Tag color="warning">optional</Tag>}
+      {label}
+    </>
+);
+
 const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
   console.log("Failed:", errorInfo);
 };
@@ -19,6 +28,22 @@ const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
 const Auth = () => {
   const api = useApi();
   const auth = useAuth();
+  const [form] = Form.useForm();
+  const [requiredMark, setRequiredMarkType] = useState<RequiredMark>('optional');
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const success = () => {
+    messageApi.open({
+      type: 'success',
+      content: 'You have successfully registered in the system',
+      duration: 5
+    });
+  };
+
+  const onRequiredTypeChange = ({ requiredMarkValue }: { requiredMarkValue: RequiredMark }) => {
+    setRequiredMarkType(requiredMarkValue);
+  };
+
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
     console.log("Success:", values);
     const response = await api.register({
@@ -26,69 +51,73 @@ const Auth = () => {
       lastName: values.lastName,
       email: values.email,
       password: values.password,
-      role: values.role ? "DOCTOR" : "PATIENT",
+      role: values.role ? "ADMIN" : "USER",
     });
     if (response.data.token) {
       auth.signIn(response.data.token);
     }
-    toast.success("Successfully registration!");
+    success();
     window.location.reload();
   };
 
   return (
-      <Form
-          name="basic"
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
-          initialValues={{ remember: true }}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-      >
+        <Form
+            form={form}
+            layout="vertical"
+            labelCol={{ span: 12 }}
+            wrapperCol={{ span: 24 }}
+            initialValues={{ requiredMarkValue: requiredMark }}
+            onValuesChange={onRequiredTypeChange}
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            requiredMark={requiredMark === 'customize' ? customizeRequiredMark : requiredMark}
+        >
+          {contextHolder}
         <Typography.Title style={{ textAlign: "center" }}>
           Sign up
         </Typography.Title>
-        <Form.Item<FieldType>
-            label="First name"
-            name="firstName"
-            rules={[{ required: true, message: "Please input your first name!" }]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item<FieldType>
-            label="Last name"
-            name="lastName"
-            rules={[{ required: true, message: "Please input your last name!" }]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item<FieldType>
-            label="Email"
-            name="email"
-            rules={[{ required: true, message: "Please input your email!" }]}
-        >
-          <Input />
+        <Form.Item style={{display: "flex", justifyContent: "center"}}>
+            <Form.Item<FieldType>
+                tooltip="This is a required field"
+                label="First name"
+                name="firstName"
+                rules={[{ required: true, message: "Please input your first name!" }]}
+                style={{ width: "400px" }}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item<FieldType>
+                tooltip="This is a required field"
+                label="Last name"
+                name="lastName"
+                rules={[{ required: true, message: "Please input your last name!" }]}
+                style={{ width: "400px" }}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item<FieldType>
+                tooltip="This is a required field"
+                label="Email"
+                name="email"
+                rules={[{ required: true, message: "Please input your email!" }]}
+                style={{ width: "400px" }}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item<FieldType>
+                tooltip="This is a required field"
+                label="Password"
+                name="password"
+                rules={[{ required: true, message: "Please input your password!" }]}
+                style={{ width: "400px" }}
+            >
+              <Input.Password />
+            </Form.Item>
         </Form.Item>
 
-        <Form.Item<FieldType>
-            label="Password"
-            name="password"
-            rules={[{ required: true, message: "Please input your password!" }]}
-        >
-          <Input.Password />
-        </Form.Item>
-
-        <Form.Item<FieldType>
-            name="role"
-            valuePropName="checked"
-            wrapperCol={{ offset: 8, span: 16 }}
-        >
-          <Checkbox>You are doctor?</Checkbox>
-        </Form.Item>
-
-        <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-          <Button type="primary" htmlType="submit">
+        <Form.Item wrapperCol={{ offset: 10, span: 18 }}>
+          <Button type="primary" htmlType="submit" onClick={success}>
             Submit
           </Button>
 

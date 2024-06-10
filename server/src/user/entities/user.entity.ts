@@ -56,7 +56,7 @@ export class User {
 
   @OneToMany(() => Order, order => order.user, {
     onDelete: 'CASCADE',
-    lazy: true
+    lazy: true,
   })
   @ApiProperty({ type: () => [Order] })
   orders: Order[];

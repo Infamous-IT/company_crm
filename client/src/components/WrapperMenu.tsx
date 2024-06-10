@@ -3,7 +3,7 @@ import {Layout, Menu, MenuProps, theme} from "antd";
 import { MenuInfo } from "rc-menu/lib/interface";
 import {
   BookOutlined,
-  HomeOutlined, LoginOutlined, SettingOutlined, TagOutlined,
+  HomeOutlined, LoginOutlined, LogoutOutlined, ProfileOutlined, SettingOutlined, TagOutlined,
   TagsOutlined,
   TeamOutlined, UserAddOutlined,
   UserOutlined,
@@ -38,7 +38,10 @@ const userItems = [
   getItem("My orders", "3", "/order-list", <TeamOutlined />),
   getItem("My customers book", "4", "/customer-list", <BookOutlined />),
   getItem("My tags", "5", "/tags-list", <TagOutlined />),
-  getItem("Settings", "6", "/settings", <SettingOutlined />)
+  getItem("Settings", "6", "/settings", <SettingOutlined />, [
+    getItem('Edit profile', '7', '/edit-profile', <ProfileOutlined />),
+    getItem('Logout', '8', '/logout', <LogoutOutlined/>),
+  ])
 ];
 
 const adminItems = [
@@ -47,7 +50,10 @@ const adminItems = [
   getItem("List of customers", "3", "/customer-list", <BookOutlined />),
   getItem("List of orders", "4", "/order-list", <TeamOutlined />),
   getItem("List of tags", "5", "/tags-list", <TagsOutlined />),
-  getItem("Settings", "6", "/settings", <SettingOutlined />)
+  getItem("Settings", "6", "/settings", <SettingOutlined />, [
+    getItem('Edit profile', '7', '/edit-profile', <ProfileOutlined />),
+    getItem('Logout', '8', '/logout', <LogoutOutlined/>),
+  ])
 ];
 
 const unauthorizedItems = [
